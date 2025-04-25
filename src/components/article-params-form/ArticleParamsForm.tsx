@@ -1,8 +1,6 @@
 import clsx from 'clsx';
-
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
-
 import styles from './ArticleParamsForm.module.scss';
 import { useEffect, useRef, useState } from 'react';
 import { Select } from 'src/ui/select';
@@ -32,6 +30,7 @@ export const ArticleParamsForm = ({
 	onFormSubmit: (formState: typeof initialParams) => void;
 }) => {
 	const [state, setState] = useState({ ...initialParams, isOpen: false });
+	const formRef = useRef<HTMLDivElement>(null);
 
 	const handleClear = () => {
 		const newState = { isOpen: state.isOpen, ...initialParams };
@@ -39,12 +38,14 @@ export const ArticleParamsForm = ({
 		onFormSubmit(newState);
 	};
 
-	const handleApply = () => {
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
 		onFormSubmit(state);
 	};
 
-	const formRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
+		if (!state.isOpen) return;
+
 		const handleClick = (e: Event) => {
 			if (!formRef.current || !(e.target instanceof HTMLElement)) {
 				return;
@@ -57,7 +58,7 @@ export const ArticleParamsForm = ({
 
 		document.addEventListener('click', handleClick, { capture: true });
 		return () => document.removeEventListener('click', handleClick);
-	}, []);
+	}, [state.isOpen]);
 
 	return (
 		<div ref={formRef}>
@@ -70,7 +71,7 @@ export const ArticleParamsForm = ({
 				className={clsx(styles.container, {
 					[styles.container_open]: state.isOpen,
 				})}>
-				<form className={styles.form}>
+				<form className={styles.form} onSubmit={handleSubmit}>
 					<div style={{ marginBottom: '30px' }}>
 						<Text size={22} weight={800} uppercase>
 							Задайте параметры
@@ -136,12 +137,7 @@ export const ArticleParamsForm = ({
 							type='clear'
 							onClick={handleClear}
 						/>
-						<Button
-							title='Применить'
-							htmlType='button'
-							type='apply'
-							onClick={handleApply}
-						/>
+						<Button title='Применить' htmlType='submit' type='apply' />
 					</div>
 				</form>
 			</aside>
